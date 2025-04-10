@@ -1,0 +1,182 @@
+{
+    "source_system_name": "db_aw_sample",
+"domain":[
+    {
+
+    "name": "SalesOrderHeader",
+
+    "tables": [
+      {
+        "name": "Customer",
+        "columns": [
+          {
+            "name": "CustomerID",
+            "data_type": "INT",
+            "constraints": [
+              "PRIMARY_KEY"
+            ]
+          },
+          {
+            "name": "FirstName",
+            "data_type": "VARCHAR(50)"
+          },
+          {
+            "name": "LastName",
+            "data_type": "VARCHAR(50)"
+          },
+          {
+            "name": "Email",
+            "data_type": "VARCHAR(100)",
+            "constraints": [
+              "UNIQUE"
+            ]
+          },
+          {
+            "name": "Phone",
+            "data_type": "VARCHAR(20)"
+          }
+        ]
+      },
+      {
+        "name": "Product",
+        "columns": [
+          {
+            "name": "ProductID",
+            "data_type": "INT",
+            "constraints": [
+              "PRIMARY_KEY"
+            ]
+          },
+          {
+            "name": "Name",
+            "data_type": "VARCHAR(100)"
+          },
+          {
+            "name": "Description",
+            "data_type": "TEXT"
+          },
+          {
+            "name": "Price",
+            "data_type": "DECIMAL(10,2)"
+          },
+          {
+            "name": "StockQuantity",
+            "data_type": "INT"
+          }
+        ]
+      },
+      {
+        "name": "SalesOrderHeader",
+        "columns": [
+          {
+            "name": "SalesOrderID",
+            "data_type": "INT",
+            "constraints": [
+              "PRIMARY_KEY"
+            ]
+          },
+          {
+            "name": "CustomerID",
+            "data_type": "INT",
+            "constraints": [
+              "FOREIGN_KEY"
+            ],
+            "references": {
+              "table": "Customer",
+              "column": "CustomerID"
+            }
+          },
+          {
+            "name": "OrderDate",
+            "data_type": "DATE"
+          },
+          {
+            "name": "TotalAmount",
+            "data_type": "DECIMAL(10,2)"
+          }
+        ]
+      },
+      {
+        "name": "SalesOrderDetail",
+        "columns": [
+          {
+            "name": "SalesOrderDetailID",
+            "data_type": "INT",
+            "constraints": [
+              "PRIMARY_KEY"
+            ]
+          },
+          {
+            "name": "SalesOrderID",
+            "data_type": "INT",
+            "constraints": [
+              "FOREIGN_KEY"
+            ],
+            "references": {
+              "table": "SalesOrderHeader",
+              "column": "SalesOrderID"
+            }
+          },
+          {
+            "name": "ProductID",
+            "data_type": "INT",
+            "constraints": [
+              "FOREIGN_KEY"
+            ],
+            "references": {
+              "table": "Product",
+              "column": "ProductID"
+            }
+          },
+          {
+            "name": "OrderQty",
+            "data_type": "INT"
+          },
+          {
+            "name": "LineTotal",
+            "data_type": "DECIMAL(10,2)"
+          }
+        ]
+      },
+      {
+        "name": "Address",
+        "columns": [
+          {
+            "name": "AddressID",
+            "data_type": "INT",
+            "constraints": [
+              "PRIMARY_KEY"
+            ]
+          },
+          {
+            "name": "CustomerID",
+            "data_type": "INT",
+            "constraints": [
+              "FOREIGN_KEY"
+            ],
+            "references": {
+              "table": "Customer",
+              "column": "CustomerID"
+            }
+          },
+          {
+            "name": "Street",
+            "data_type": "VARCHAR(100)"
+          },
+          {
+            "name": "City",
+            "data_type": "VARCHAR(50)"
+          },
+          {
+            "name": "State",
+            "data_type": "VARCHAR(50)"
+          },
+          {
+            "name": "ZipCode",
+            "data_type": "VARCHAR(10)"
+          }
+        ]
+    }
+     ]
+     }]
+  }
