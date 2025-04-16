@@ -52,7 +52,7 @@ export const System = ({ elements }) => {
         },
       ],
       layout: {
-        name: "fcose",
+        name: "circle",
         quality: "proof",
         randomize: true,
         animate: false,

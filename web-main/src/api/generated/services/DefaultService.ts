@@ -17,6 +17,57 @@ import type { SourceSystemsResponse } from '../models/SourceSystemsResponse';
 import type { CancelablePromise } from '../core/CancelablePromise';
 import { OpenAPI } from '../core/OpenAPI';
 import { request as __request } from '../core/request';
+
+// New types for graph operations
+export interface GraphFilterRequest {
+    systemId: string;
+    domainId: string;
+}
+
+export interface GraphBatchRequest {
+    systemIds: string[];
+}
+
+export interface GraphEntityResponse {
+    entities: any[];
+}
+
+export interface GraphDomainResponse {
+    domains: any[];
+}
+
+export interface GraphSourceSystemResponse {
+    sourceSystems: any[];
+}
+
+export interface GraphClientResponse {
+    clientData: any;
+}
+
+export interface GraphNode {
+    data: {
+        id: string;
+        label: string;
+        type: string;
+        icon?: string;
+    };
+}
+
+export interface GraphDataResponse {
+    data: GraphNode[];
+    graphType: string;
+}
+
+export interface ClientGraphResponse {
+    systems: GraphDataResponse;
+    domains: GraphDataResponse;
+    entities: GraphDataResponse;
+}
+
+export interface SystemDomainsResponse {
+    domains: any[];
+}
+
 export class DefaultService {
     /**
      * Start a new chat with the LLM.
@@ -96,13 +147,13 @@ export class DefaultService {
      * @throws ApiError
      */
     public static getApiGraphId(
-        id: string,
+         clientId: string = 'client_001'
     ): CancelablePromise<GraphResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/graph/{id}',
+            url: '/api/graph/clients/{clientId}/all',
             path: {
-                'id': id,
+                'clientId': clientId,
             },
             errors: {
                 404: `Data not found.`,
@@ -151,6 +202,7 @@ export class DefaultService {
             method: 'GET',
             url: '/api/data_products',
             errors: {
+                404: `Client not found.`,
                 500: `Server error.`,
             },
         });
@@ -288,6 +340,146 @@ export class DefaultService {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/readiness',
+        });
+    }
+
+    //New updated graph APIs
+    /**
+     * Filter entities by system and domain
+     * @param requestBody
+     * @returns GraphEntityResponse Filtered entities
+     * @throws ApiError
+     */
+    public static postApiGraphEntitiesFilter(
+        requestBody: GraphFilterRequest,
+    ): CancelablePromise<GraphEntityResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/graph/entities/filter',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Invalid input.`,
+                500: `Server error.`,
+            },
+        });
+    }
+    /**
+     * Get all source systems
+     * @returns GraphSourceSystemResponse List of source systems
+     * @throws ApiError
+     */
+    public static getApiGraphSourceSystems(): CancelablePromise<GraphSourceSystemResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/graph/source_systems',
+            errors: {
+                500: `Server error.`,
+            },
+        });
+    }
+    /**
+     * Get all data for a specific client
+     * @param clientId
+     * @returns GraphClientResponse Client data
+     * @throws ApiError
+     */
+    public static getApiGraphClientsClientIdAll(
+        clientId: string,
+    ): CancelablePromise<GraphClientResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/graph/clients/{clientId}/all',
+            path: {
+                'clientId': clientId,
+            },
+            errors: {
+                404: `Client not found.`,
+                500: `Server error.`,
+            },
+        });
+    }
+    /**
+     * Get domains in batch for specified systems
+     * @param requestBody
+     * @returns GraphDomainResponse List of domains
+     * @throws ApiError
+     */
+    public static postApiGraphDomainsBatch(
+        requestBody: GraphBatchRequest,
+    ): CancelablePromise<GraphDomainResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/graph/domains/batch',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Invalid input.`,
+                500: `Server error.`,
+            },
+        });
+    }
+    /**
+     * Get person entities
+     * @returns GraphEntityResponse List of person entities
+     * @throws ApiError
+     */
+    public static getApiGraphEntitiesDomain(): CancelablePromise<GraphEntityResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/graph/entities/person',
+            errors: {
+                500: `Server error.`,
+            },
+        });
+    }
+    /**
+     * Get all entities
+     * @returns GraphEntityResponse List of all entities
+     * @throws ApiError
+     */
+    public static getApiGraphEntities(): CancelablePromise<GraphEntityResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/graph/entities',
+            errors: {
+                500: `Server error.`,
+            },
+        });
+    }
+    /**
+     * Get all domains
+     * @returns GraphDomainResponse List of all domains
+     * @throws ApiError
+     */
+    public static getApiGraphDomains(): CancelablePromise<GraphDomainResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/graph/domains',
+            errors: {
+                500: `Server error.`,
+            },
+        });
+    }
+    /**
+     * Get domains by system
+     * @param systemId The ID of the system to get domains for
+     * @returns SystemDomainsResponse List of domains for the specified system
+     * @throws ApiError
+     */
+    public static getApiDomainsSystemId(
+        systemId: string,
+    ): CancelablePromise<SystemDomainsResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: '/api/domains/{systemId}',
+            path: {
+                'systemId': systemId,
+            },
+            errors: {
+                404: `System not found.`,
+                500: `Server error.`,
+            },
         });
     }
 }

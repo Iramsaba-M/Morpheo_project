@@ -47,7 +47,7 @@ export const Domain = ({ elements }) => {
         },
       ],
       layout: {
-        name: "grid",
+        name: "circle",
         fit: true,
         animate: false,
         padding: 400,

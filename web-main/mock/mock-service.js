@@ -111,34 +111,186 @@ app.get('/api/chat/:chatId', (req, res) => {
 });
 
 // Graph endpoint
+// app.get('/api/graph/:id', (req, res) => {
+//   res.json([{
+//     graphType: 'domain',
+//     data: [
+//       {
+//         data: {
+//           id: '1',
+//           label: 'Node 1',
+//           icon: 'database'
+//         }
+//       },
+//       {
+//         data: {
+//           id: '2',
+//           label: 'Node 2',
+//           icon: 'server'
+//         }
+//       },
+//       {
+//         data: {
+//           source: '1',
+//           target: '2',
+//           label: 'connects to'
+//         }
+//       }
+//     ]
+
+
+//   }]);
+// });
+
 app.get('/api/graph/:id', (req, res) => {
-  res.json([{
-    graphType: 'domain',
-    data: [
-      {
-        data: {
-          id: '1',
-          label: 'Node 1',
-          icon: 'database'
-        }
-      },
-      {
-        data: {
-          id: '2',
-          label: 'Node 2',
-          icon: 'server'
-        }
-      },
-      {
-        data: {
-          source: '1',
-          target: '2',
-          label: 'connects to'
-        }
-      }
-    ]
-  }]);
+  const response =
+  [
+     {
+        "data": [
+            {
+                "data": {
+                    "id": "Salesforce",
+                    "label": "System: Salesforce",
+                    "type": "system"
+                }
+            },
+            {
+                "data": {
+                    "id": "CRM",
+                    "label": "System: CRM",
+                    "type": "system"
+                }
+            },
+            {
+                "data": {
+                    "id": "MDM",
+                    "label": "System: MDM",
+                    "type": "system"
+                }
+            }
+        ],
+        "graphType": "system"
+    },
+    {
+        "data": [
+            {
+                "data": {
+                    "id": "Marketing",
+                    "label": "Domain: Marketing",
+                    "type": "domain"
+                }
+            },
+            {
+                "data": {
+                    "id": "Retail_SF",
+                    "label": "Domain: Retail (SF)",
+                    "type": "domain"
+                }
+            },
+            {
+                "data": {
+                    "id": "Health",
+                    "label": "Domain: Health",
+                    "type": "domain"
+                }
+            },
+            {
+                "data": {
+                    "id": "Retail_CRM",
+                    "label": "Domain: Retail (CRM)",
+                    "type": "domain"
+                }
+            },
+            {
+                "data": {
+                    "id": "Product",
+                    "label": "Domain: Product",
+                    "type": "domain"
+                }
+            },
+            {
+                "data": {
+                    "id": "Asset",
+                    "label": "Domain: Asset",
+                    "type": "domain"
+                }
+            }
+        ],
+        "graphType": "domain"
+    },
+    {
+        "data": [
+            {
+                "data": {
+                    "id": "person",
+                    "label": "mdm: person",
+                    "type": "entity"
+                }
+            },
+            {
+                "data": {
+                    "id": "Contact",
+                    "label": "mdm: Contact",
+                    "type": "entity"
+                }
+            },
+            {
+                "data": {
+                    "id": "address",
+                    "label": "mdm: address",
+                    "type": "entity"
+                }
+            },
+            {
+                "data": {
+                    "id": "phone_number",
+                    "label": "mdm: phone_number",
+                    "type": "entity"
+                }
+            },
+            {
+                "data": {
+                    "id": "identifier",
+                    "label": "mdm: identifier",
+                    "type": "entity"
+                }
+            },
+            {
+                "data": {
+                    "id": "contract_role",
+                    "label": "mdm: contract_role",
+                    "type": "entity"
+                }
+            },
+            {
+                "data": {
+                    "id": "contract",
+                    "label": "mdm: contract",
+                    "type": "entity"
+                }
+            },
+            {
+                "data": {
+                    "id": "AccountContactRelation",
+                    "label": "salesforce: AccountContactRelation",
+                    "type": "entity"
+                }
+            },
+            {
+                "data": {
+                    "id": "Account",
+                    "label": "salesforce: Account",
+                    "type": "entity"
+                }
+            }
+        ],
+        "graphType": "entity"
+    }
+  ]
+
+  res.json(response);
 });
+
 
 // Prompts endpoint
 app.get('/api/prompts', (req, res) => {

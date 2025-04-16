@@ -62,7 +62,7 @@ export const Entity = ({ elements }) => {
         },
       ],
       layout: {
-        name: "fcose",
+        name: "circle",
         quality: "proof",
         randomize: true,
         animate: false,
