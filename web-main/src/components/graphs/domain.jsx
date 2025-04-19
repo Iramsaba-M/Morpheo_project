@@ -7,7 +7,7 @@ if (!Cytoscape.prototype.hasOwnProperty("nodeHtmlLabel")) {
   Cytoscape.use(nodeHtmlLabel);
 }
 
-export const Domain = ({ elements }) => {
+export const Domain = ({ elements, onNodeClick, selectedNode, centerNode }) => {
   const cyRef = useRef(null);
   const cyContainerRef = useRef(null);
 
@@ -18,9 +18,21 @@ export const Domain = ({ elements }) => {
       cyRef.current = null;
     }
 
+    // Create center node if provided
+    const centerNodeData = centerNode ? {
+      data: {
+        id: centerNode,
+        label: centerNode,
+        type: "system",
+        icon: "boxes",
+        width: 80,
+        height: 80,
+      }
+    } : null;
+
     const cy = Cytoscape({
       container: cyContainerRef.current,
-      elements,
+      elements: centerNodeData ? [...elements, centerNodeData] : elements,
       style: [
         {
           selector: "node",
@@ -32,8 +44,29 @@ export const Domain = ({ elements }) => {
             "background-position-y": "50%",
             "border-width": 4,
             "border-color": "#D9D9FF",
-            width: 60,
-            height: 60,
+            width: 80,
+            height: 80,
+          },
+        },
+        {
+          selector: "node[type='system']",
+          style: {
+            "background-color": "#16A34A",
+            "background-image": `url(/images/graph/boxes.svg)`,
+            "background-fit": "none",
+            "background-position-x": "50%",
+            "background-position-y": "50%",
+            "border-width": 4,
+            "border-color": "#BBF7D0",
+            width: 80,
+            height: 80,
+          },
+        },
+        {
+          selector: "node:selected",
+          style: {
+            "border-width": 6,
+            "border-color": "#FFFFFF",
           },
         },
         {
@@ -50,8 +83,15 @@ export const Domain = ({ elements }) => {
         name: "circle",
         fit: true,
         animate: false,
-        padding: 400,
+        padding: 200,
         avoidOverlap: true,
+        nodeDimensionsIncludeLabels: true,
+        spacingFactor: 1.2,
+        radius: 200,
+        startAngle: 0,
+        sweep: 360,
+        clockwise: true,
+        sort: undefined
       },
     });
 
@@ -61,7 +101,7 @@ export const Domain = ({ elements }) => {
         tpl: (data) => `
       <div style="display: flex; flex-direction: column; align-items: center; margin-top: 100px;">
         <div style="display: flex; align-items: center; justify-content: center;
-            background-color: #4569E1;
+            background-color: ${data.type === 'system' ? '#16A34A' : '#4569E1'};
             border-radius: 15px;
             padding: 2px 10px;
             box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
@@ -88,19 +128,65 @@ export const Domain = ({ elements }) => {
       },
     ]);
 
+    // Add click handler
+    cy.on('tap', 'node', (evt) => {
+      const node = evt.target;
+      if (onNodeClick && node.id() !== centerNode) {
+        onNodeClick(node.id());
+      }
+    });
+
+    // Select the node if provided
+    if (selectedNode) {
+      const node = cy.getElementById(selectedNode);
+      if (node) {
+        node.select();
+      }
+    }
+
     cyRef.current = cy;
 
+    // Ensure proper rendering and visibility
     setTimeout(() => {
       cy.resize();
       cy.fit();
+
+      if (centerNode) {
+        const centerNodeElement = cy.getElementById(centerNode);
+        if (centerNodeElement) {
+          // Position the center node in the middle
+          centerNodeElement.position({
+            x: cy.width() / 2,
+            y: cy.height() / 2
+          });
+
+          // Arrange other nodes in a circle around it
+          const otherNodes = cy.nodes().filter(node => node.id() !== centerNode);
+          const radius = Math.min(cy.width(), cy.height()) * 0.3;
+          const angleStep = (2 * Math.PI) / otherNodes.length;
+
+          otherNodes.forEach((node, index) => {
+            const angle = index * angleStep;
+            node.position({
+              x: cy.width() / 2 + radius * Math.cos(angle),
+              y: cy.height() / 2 + radius * Math.sin(angle)
+            });
+          });
+        }
+      }
+
       cy.zoom({
-        level: cy.zoom() * 0.15,
+        level: cy.zoom() * 0.6,
         renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 },
       });
     }, 100);
 
-    return () => cy.destroy();
-  }, [elements]);
+    return () => {
+      if (cyRef.current) {
+        cyRef.current.destroy();
+      }
+    };
+  }, [elements, onNodeClick, selectedNode, centerNode]);
 
   return (
     <div className="relative w-full h-full" ref={cyContainerRef}>

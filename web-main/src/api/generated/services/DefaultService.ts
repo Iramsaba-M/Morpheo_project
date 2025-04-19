@@ -29,7 +29,15 @@ export interface GraphBatchRequest {
 }
 
 export interface GraphEntityResponse {
-    entities: any[];
+    data: Array<{
+        data: {
+            icon: string;
+            id: string;
+            label: string;
+            type: string;
+        };
+    }>;
+    graphType: string;
 }
 
 export interface GraphDomainResponse {
@@ -65,7 +73,15 @@ export interface ClientGraphResponse {
 }
 
 export interface SystemDomainsResponse {
-    domains: any[];
+    data: Array<{
+        data: {
+            icon: string;
+            id: string;
+            label: string;
+            type: string;
+        };
+    }>;
+    graphType: string;
 }
 
 export class DefaultService {
@@ -147,7 +163,7 @@ export class DefaultService {
      * @throws ApiError
      */
     public static getApiGraphId(
-         clientId: string = 'client_001'
+         clientId: string = 'client_004'
     ): CancelablePromise<GraphResponse> {
         return __request(OpenAPI, {
             method: 'GET',
@@ -424,7 +440,7 @@ export class DefaultService {
      * @returns GraphEntityResponse List of person entities
      * @throws ApiError
      */
-    public static getApiGraphEntitiesDomain(): CancelablePromise<GraphEntityResponse> {
+    public static getApiGraphEntitiesEntity(): CancelablePromise<GraphEntityResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: '/api/graph/entities/person',
@@ -472,7 +488,7 @@ export class DefaultService {
     ): CancelablePromise<SystemDomainsResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/domains/{systemId}',
+            url: '/api/graph/systems/{systemId}/domains',
             path: {
                 'systemId': systemId,
             },

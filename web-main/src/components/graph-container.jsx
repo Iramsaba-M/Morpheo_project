@@ -14,17 +14,31 @@ export const GraphContainer = () => {
   const [domainData, setDomainData] = useState(null);
   const [entityData, setEntityData] = useState(null);
   const [isLoadingRelated, setIsLoadingRelated] = useState(false);
+  const [activeTab, setActiveTab] = useState("systems");
 
   // Handle system click
   const handleSystemClick = async (systemId) => {
     setSelectedSystem(systemId);
     setSelectedDomain(null);
+    setEntityData(null); // Clear entity data when system changes
     setIsLoadingRelated(true);
     try {
       const response = await DefaultService.getApiDomainsSystemId(systemId);
-      setDomainData(response.domains);
+      // Transform the response data to match the expected format
+      const transformedDomains = response.data.map(item => ({
+        data: {
+          ...item.data,
+          // Add any additional properties needed for the graph
+          width: 60,
+          height: 60,
+        }
+      }));
+      setDomainData(transformedDomains);
+      // Switch to domains tab
+      setActiveTab("domains");
     } catch (error) {
       console.error("Error fetching domains:", error);
+      setDomainData(null); // Clear domain data on error
     }
     setIsLoadingRelated(false);
   };
@@ -34,14 +48,25 @@ export const GraphContainer = () => {
     setSelectedDomain(domainId);
     setIsLoadingRelated(true);
     try {
-      const response = await DefaultService.getApiGraphEntitiesDomain();
-      // Filter entities for the selected domain
-      const filteredEntities = response.entities.filter(
-        (entity) => entity.domainId === domainId
-      );
-      setEntityData(filteredEntities);
+      const response = await DefaultService.postApiGraphEntitiesFilter({
+        systemId: selectedSystem,
+        domainId: domainId
+      });
+      // Transform the response data to match the expected format
+      const transformedEntities = response.data.map(item => ({
+        data: {
+          ...item.data,
+          // Add any additional properties needed for the graph
+          width: 60,
+          height: 60,
+        }
+      }));
+      setEntityData(transformedEntities);
+      // Switch to entities tab
+      setActiveTab("entities");
     } catch (error) {
       console.error("Error fetching entities:", error);
+      setEntityData(null); // Clear entity data on error
     }
     setIsLoadingRelated(false);
   };
@@ -65,7 +90,7 @@ export const GraphContainer = () => {
   }
 
   return (
-    <Tabs defaultValue="systems" className="w-full flex flex-col h-full p-2">
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full flex flex-col h-full p-2">
       <div className="flex-grow overflow-hidden">
         <TabsContent value="systems" className="h-full">
           {graphData && graphData["system"] && (
@@ -77,30 +102,51 @@ export const GraphContainer = () => {
           )}
         </TabsContent>
         <TabsContent value="domains" className="h-full">
-          {domainData ? (
-            <Domain
-              elements={domainData}
-              onNodeClick={handleDomainClick}
-              selectedNode={selectedDomain}
-              centerNode={selectedSystem}
-            />
-          ) : (
-            graphData && graphData["domain"] && (
+          {selectedSystem ? (
+            domainData && domainData.length > 0 ? (
               <Domain
-                elements={graphData["domain"]}
+                elements={domainData}
                 onNodeClick={handleDomainClick}
                 selectedNode={selectedDomain}
+                centerNode={selectedSystem}
               />
+            ) : (
+              <div className="flex justify-center items-center h-full">
+                <span className="text-muted-foreground">
+                  No domains found for the selected system
+                </span>
+              </div>
             )
+          ) : (
+            <div className="flex justify-center items-center h-full">
+              <span className="text-muted-foreground">
+                Please select a system first
+              </span>
+            </div>
           )}
         </TabsContent>
         <TabsContent value="entities" className="h-full">
-          {entityData ? (
-            <Entity elements={entityData} />
-          ) : (
-            graphData && graphData["entity"] && (
-              <Entity elements={graphData["entity"]} />
+          {selectedDomain ? (
+            entityData && entityData.length > 0 ? (
+              <Entity
+                elements={entityData}
+                onNodeClick={handleDomainClick}
+                selectedNode={selectedDomain}
+                centerNode={selectedDomain}
+              />
+            ) : (
+              <div className="flex justify-center items-center h-full">
+                <span className="text-muted-foreground">
+                  No entities found for the selected domain
+                </span>
+              </div>
             )
+          ) : (
+            <div className="flex justify-center items-center h-full">
+              <span className="text-muted-foreground">
+                Please select a domain first
+              </span>
+            </div>
           )}
         </TabsContent>
       </div>

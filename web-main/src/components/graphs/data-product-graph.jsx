@@ -12,11 +12,11 @@ export const DataProductGraph = ({ graph }) => {
   const elements = graph.data;
 
   let colour, image, borderColour;
-  if (graph.graphType == "systems") {
+  if (graph.graphType == "system") {
     colour = "#16A34A";
     image = "boxes.svg";
     borderColour = "#BBF7D0";
-  } else if (graph.graphType == "domains") {
+  } else if (graph.graphType == "domain") {
     colour = "#4569E1";
     image = "box.svg";
     borderColour = "#D9D9FF";
@@ -127,7 +127,7 @@ export const DataProductGraph = ({ graph }) => {
       ref={containerRef}
       className="w-full h-full"
       style={{
-        minHeight: "400px",
+        minHeight: "100px",
         position: "relative",
         marginBottom: "60px",
       }}
