@@ -435,6 +435,27 @@ export class DefaultService {
             },
         });
     }
+
+    /**
+     * Get domains in batch for specified systems using the batch-domains endpoint
+     * @param requestBody
+     * @returns GraphDomainResponse List of domains
+     * @throws ApiError
+     */
+    public static postApiGraphDomainsBatchDomains(
+        requestBody: GraphBatchRequest,
+    ): CancelablePromise<GraphDomainResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/graph/domains/batch-domains',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Invalid input.`,
+                500: `Server error.`,
+            },
+        });
+    }
     /**
      * Get person entities
      * @returns GraphEntityResponse List of person entities

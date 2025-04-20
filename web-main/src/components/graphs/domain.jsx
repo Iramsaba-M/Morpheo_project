@@ -18,21 +18,45 @@ export const Domain = ({ elements, onNodeClick, selectedNode, centerNode }) => {
       cyRef.current = null;
     }
 
-    // Create center node if provided
-    const centerNodeData = centerNode ? {
-      data: {
-        id: centerNode,
-        label: centerNode,
-        type: "system",
-        icon: "boxes",
-        width: 80,
-        height: 80,
-      }
-    } : null;
+    // Create overlay for fixed center icon
+    const overlayDiv = document.createElement("div");
+    overlayDiv.style.position = "absolute";
+    overlayDiv.style.left = "50%";
+    overlayDiv.style.top = "50%";
+    overlayDiv.style.transform = "translate(-50%, -50%)";
+    overlayDiv.style.zIndex = "10";
+    cyContainerRef.current.appendChild(overlayDiv);
+
+    // Create halo effect
+    const haloDiv = document.createElement("div");
+    haloDiv.style.position = "absolute";
+    haloDiv.style.left = "50%";
+    haloDiv.style.top = "50%";
+    haloDiv.style.width = "200px";
+    haloDiv.style.height = "200px";
+    haloDiv.style.transform = "translate(-50%, -50%)";
+    haloDiv.style.backgroundColor = "#D9D9FF";
+    haloDiv.style.borderRadius = "50%";
+    haloDiv.style.filter = "blur(20px)";
+    haloDiv.style.zIndex = "5";
+    cyContainerRef.current.appendChild(haloDiv);
+
+    // Create center icon
+    const centerIcon = document.createElement("div");
+    centerIcon.style.width = "100px";
+    centerIcon.style.height = "100px";
+    centerIcon.style.backgroundColor = "#4569E1";
+    centerIcon.style.borderRadius = "50%";
+    centerIcon.style.display = "flex";
+    centerIcon.style.alignItems = "center";
+    centerIcon.style.justifyContent = "center";
+    centerIcon.style.border = "4px solid #BBF7D0";
+    centerIcon.innerHTML = `<img src="/images/graph/boxes.svg" alt="system" style="width: 50px; height: 50px; filter: brightness(0) invert(1);">`;
+    overlayDiv.appendChild(centerIcon);
 
     const cy = Cytoscape({
       container: cyContainerRef.current,
-      elements: centerNodeData ? [...elements, centerNodeData] : elements,
+      elements: elements,
       style: [
         {
           selector: "node",
@@ -49,49 +73,19 @@ export const Domain = ({ elements, onNodeClick, selectedNode, centerNode }) => {
           },
         },
         {
-          selector: "node[type='system']",
-          style: {
-            "background-color": "#16A34A",
-            "background-image": `url(/images/graph/boxes.svg)`,
-            "background-fit": "none",
-            "background-position-x": "50%",
-            "background-position-y": "50%",
-            "border-width": 4,
-            "border-color": "#BBF7D0",
-            width: 80,
-            height: 80,
-          },
-        },
-        {
           selector: "node:selected",
           style: {
             "border-width": 6,
             "border-color": "#FFFFFF",
           },
         },
-        {
-          selector: "edge",
-          style: {
-            width: 2,
-            "line-color": "#cccccc",
-            "target-arrow-color": "#cccccc",
-            "target-arrow-shape": "triangle",
-          },
-        },
       ],
       layout: {
         name: "circle",
-        fit: true,
-        animate: false,
-        padding: 200,
-        avoidOverlap: true,
-        nodeDimensionsIncludeLabels: true,
-        spacingFactor: 1.2,
-        radius: 200,
-        startAngle: 0,
-        sweep: 360,
-        clockwise: true,
-        sort: undefined
+        radius: 360,
+        startAngle: (3 * Math.PI) / 2,
+        sweep: 2 * Math.PI - Math.PI / 3,
+        center: { x: 0, y: -30 },
       },
     });
 
@@ -99,39 +93,38 @@ export const Domain = ({ elements, onNodeClick, selectedNode, centerNode }) => {
       {
         query: "node",
         tpl: (data) => `
-      <div style="display: flex; flex-direction: column; align-items: center; margin-top: 100px;">
-        <div style="display: flex; align-items: center; justify-content: center;
-            background-color: ${data.type === 'system' ? '#16A34A' : '#4569E1'};
-            border-radius: 15px;
-            padding: 2px 10px;
-            box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
-          ">
-          <img src="/images/systems/${data.icon}.svg" alt="${data.icon}" style="
-            width: 16px;
-            height: 16px;
-            margin-right: 6px;
-            padding: 1px;
-            background-color: white;
-            border-radius: 15px;"
-          />
-          <div style="
-            color: white;
-            font-size: 12px;
-            display: inline-block;
-          ">
-            ${data.label}
+          <div style="display: flex; flex-direction: column; align-items: center; margin-top: 120px;">
+            <div style="display: flex; align-items: center; justify-content: center;
+                background-color: #4569E1;
+                border-radius: 15px;
+                padding: 2px 10px;
+                box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
+              ">
+              <img src="/images/systems/${data.icon}.svg" alt="${data.icon}" style="
+                width: 16px;
+                height: 16px;
+                margin-right: 6px;
+                padding: 1px;
+                background-color: white;
+                border-radius: 15px;"
+              />
+              <div style="
+                color: white;
+                font-size: 12px;
+                display: inline-block;
+              ">
+                ${data.label}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    `,
-        cssClass: "cy-node-html-label",
+        `,
       },
     ]);
 
     // Add click handler
     cy.on('tap', 'node', (evt) => {
       const node = evt.target;
-      if (onNodeClick && node.id() !== centerNode) {
+      if (onNodeClick) {
         onNodeClick(node.id());
       }
     });
@@ -146,37 +139,11 @@ export const Domain = ({ elements, onNodeClick, selectedNode, centerNode }) => {
 
     cyRef.current = cy;
 
-    // Ensure proper rendering and visibility
     setTimeout(() => {
       cy.resize();
       cy.fit();
-
-      if (centerNode) {
-        const centerNodeElement = cy.getElementById(centerNode);
-        if (centerNodeElement) {
-          // Position the center node in the middle
-          centerNodeElement.position({
-            x: cy.width() / 2,
-            y: cy.height() / 2
-          });
-
-          // Arrange other nodes in a circle around it
-          const otherNodes = cy.nodes().filter(node => node.id() !== centerNode);
-          const radius = Math.min(cy.width(), cy.height()) * 0.3;
-          const angleStep = (2 * Math.PI) / otherNodes.length;
-
-          otherNodes.forEach((node, index) => {
-            const angle = index * angleStep;
-            node.position({
-              x: cy.width() / 2 + radius * Math.cos(angle),
-              y: cy.height() / 2 + radius * Math.sin(angle)
-            });
-          });
-        }
-      }
-
       cy.zoom({
-        level: cy.zoom() * 0.6,
+        level: cy.zoom() * 0.4,
         renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 },
       });
     }, 100);
@@ -184,6 +151,14 @@ export const Domain = ({ elements, onNodeClick, selectedNode, centerNode }) => {
     return () => {
       if (cyRef.current) {
         cyRef.current.destroy();
+      }
+      if (cyContainerRef.current) {
+        if (overlayDiv && overlayDiv.parentNode === cyContainerRef.current) {
+          cyContainerRef.current.removeChild(overlayDiv);
+        }
+        if (haloDiv && haloDiv.parentNode === cyContainerRef.current) {
+          cyContainerRef.current.removeChild(haloDiv);
+        }
       }
     };
   }, [elements, onNodeClick, selectedNode, centerNode]);

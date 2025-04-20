@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import Cytoscape from "cytoscape";
 import fcose from "cytoscape-fcose";
 import nodeHtmlLabel from "cytoscape-node-html-label";
+import { createRoot } from "react-dom/client";
 
 // eslint-disable-next-line react-hooks/rules-of-hooks
 if (!Cytoscape.prototype.hasOwnProperty("nodeHtmlLabel")) {
@@ -23,20 +24,45 @@ export const System = ({ elements, onNodeClick, selectedNode }) => {
       cyRef.current = null;
     }
 
+    // Create overlay for fixed center icon
+    const overlayDiv = document.createElement("div");
+    overlayDiv.style.position = "absolute";
+    overlayDiv.style.left = "50%";
+    overlayDiv.style.top = "50%";
+    overlayDiv.style.transform = "translate(-50%, -50%)";
+    overlayDiv.style.zIndex = "10";
+    cyContainerRef.current.appendChild(overlayDiv);
+
+    // Create halo effect
+    const haloDiv = document.createElement("div");
+    haloDiv.style.position = "absolute";
+    haloDiv.style.left = "50%";
+    haloDiv.style.top = "50%";
+    haloDiv.style.width = "200px";
+    haloDiv.style.height = "200px";
+    haloDiv.style.transform = "translate(-50%, -50%)";
+    haloDiv.style.backgroundColor = "#BBF7D0";
+    haloDiv.style.borderRadius = "50%";
+    haloDiv.style.filter = "blur(20px)";
+    haloDiv.style.zIndex = "5";
+    cyContainerRef.current.appendChild(haloDiv);
+
+    // Create center icon
+    const centerIcon = document.createElement("div");
+    centerIcon.style.width = "100px";
+    centerIcon.style.height = "100px";
+    centerIcon.style.backgroundColor = "#4569E1";
+    centerIcon.style.borderRadius = "50%";
+    centerIcon.style.display = "flex";
+    centerIcon.style.alignItems = "center";
+    centerIcon.style.justifyContent = "center";
+    centerIcon.style.border = "4px solid #D9D9FF";
+    centerIcon.innerHTML = `<img src="/images/graph/boxes.svg" alt="systems" style="width: 50px; height: 50px; filter: brightness(0) invert(1);">`;
+    overlayDiv.appendChild(centerIcon);
+
     const cy = Cytoscape({
       container: cyContainerRef.current,
-      elements: [
-        // Add center node
-        {
-          data: {
-            id: 'center',
-            label: 'Systems',
-            type: 'center',
-            icon: 'boxes',
-          }
-        },
-        ...elements
-      ],
+      elements: elements,
       style: [
         {
           selector: "node",
@@ -53,117 +79,58 @@ export const System = ({ elements, onNodeClick, selectedNode }) => {
           },
         },
         {
-          selector: "node[type='center']",
-          style: {
-            "background-color": "#4569E1",
-            "background-image": `url(/images/graph/boxes.svg)`,
-            "background-fit": "none",
-            "background-position-x": "50%",
-            "background-position-y": "50%",
-            "border-width": 4,
-            "border-color": "#D9D9FF",
-            width: 100,
-            height: 100,
-          },
-        },
-        {
           selector: "node:selected",
           style: {
             "border-width": 6,
             "border-color": "#FFFFFF",
           },
         },
-        {
-          selector: "edge",
-          style: {
-            width: 2,
-            "line-color": "#cccccc",
-            "target-arrow-color": "#cccccc",
-            "target-arrow-shape": "triangle",
-          },
-        },
       ],
       layout: {
         name: "circle",
-        fit: true,
-        animate: false,
-        padding: 200,
-        avoidOverlap: true,
-        nodeDimensionsIncludeLabels: true,
-        spacingFactor: 1.2,
-        radius: 200,
-        startAngle: 0,
-        sweep: 360,
-        clockwise: true,
-        sort: undefined
+        radius: 240,
+        startAngle: (3 * Math.PI) / 2,
+        sweep: 2 * Math.PI - Math.PI / 3,
+        center: { x: 0, y: -30 },
       },
     });
 
     cy.nodeHtmlLabel([
       {
-        query: "node[type='center']",
+        query: "node",
         tpl: (data) => `
-      <div style="display: flex; flex-direction: column; align-items: center; margin-top: 140px;">
-        <div style="display: flex; align-items: center; justify-content: center;
-            background-color: #4569E1;
-            border-radius: 15px;
-            padding: 4px 15px;
-            box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
-          ">
-          <img src="/images/systems/${data.icon}.svg" alt="${data.icon}" style="
-            width: 20px;
-            height: 20px;
-            margin-right: 8px;
-            padding: 2px;
-            background-color: white;
-            border-radius: 15px;"
-          />
-          <div style="
-            color: white;
-            font-size: 14px;
-            display: inline-block;
-          ">
-            ${data.label}
+          <div style="display: flex; flex-direction: column; align-items: center; margin-top: 120px;">
+            <div style="display: flex; align-items: center; justify-content: center;
+                background-color: #16A34A;
+                border-radius: 15px;
+                padding: 2px 10px;
+                box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
+              ">
+              <img src="/images/systems/${data.icon}.svg" alt="${data.icon}" style="
+                width: 16px;
+                height: 16px;
+                margin-right: 6px;
+                padding: 2px;
+                background-color: white;
+                border-radius: 15px;"
+              />
+              <div style="
+                color: white;
+                font-size: 14px;
+                display: inline-block;
+              ">
+                ${data.label}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    `,
-      },
-      {
-        query: "node[type!='center']",
-        tpl: (data) => `
-      <div style="display: flex; flex-direction: column; align-items: center; margin-top: 120px;">
-        <div style="display: flex; align-items: center; justify-content: center;
-            background-color: #16A34A;
-            border-radius: 15px;
-            padding: 2px 10px;
-            box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
-          ">
-          <img src="/images/systems/${data.icon}.svg" alt="${data.icon}" style="
-            width: 16px;
-            height: 16px;
-            margin-right: 6px;
-            padding: 1px;
-            background-color: white;
-            border-radius: 15px;"
-          />
-          <div style="
-            color: white;
-            font-size: 12px;
-            display: inline-block;
-          ">
-            ${data.label}
-          </div>
-        </div>
-      </div>
-    `,
+        `,
       },
     ]);
 
     // Add click handler
     cy.on('tap', 'node', (evt) => {
       const node = evt.target;
-      if (onNodeClick && node.id() !== 'center') {
+      if (onNodeClick) {
         onNodeClick(node.id());
       }
     });
@@ -182,35 +149,43 @@ export const System = ({ elements, onNodeClick, selectedNode }) => {
       cy.resize();
       cy.fit();
 
-      // Position center node in the middle
-      const centerNode = cy.getElementById('center');
-      if (centerNode) {
-        centerNode.position({
-          x: cy.width() / 2,
-          y: cy.height() / 2
+      // Position all nodes in a perfect circle
+      const nodes = cy.nodes();
+      const radius = 180; // Fixed radius for all nodes
+      const centerX = cy.width() / 2;
+      const centerY = cy.height() / 2;
+      const angleStep = (2 * Math.PI) / nodes.length;
+      const startAngle = -Math.PI / 3; // Adjusted start angle to -60 degrees
+
+      nodes.forEach((node, index) => {
+        const angle = startAngle + (index * angleStep);
+        node.position({
+          x: centerX + radius * Math.cos(angle),
+          y: centerY + radius * Math.sin(angle)
         });
+      });
 
-        // Arrange other nodes in an orbit
-        const otherNodes = cy.nodes().filter(node => node.id() !== 'center');
-        const radius = Math.min(cy.width(), cy.height()) * 0.35;
-        const angleStep = (2 * Math.PI) / otherNodes.length;
-
-        otherNodes.forEach((node, index) => {
-          const angle = index * angleStep;
-          node.position({
-            x: cy.width() / 2 + radius * Math.cos(angle),
-            y: cy.height() / 2 + radius * Math.sin(angle)
-          });
-        });
-      }
-
+      // Center the view and adjust zoom
+      cy.center();
       cy.zoom({
-        level: cy.zoom() * 0.5,
+        level: cy.zoom() * 0.6,
         renderedPosition: { x: cy.width() / 2, y: cy.height() / 2 },
       });
     }, 100);
 
-    return () => cy.destroy();
+    return () => {
+      if (cyRef.current) {
+        cyRef.current.destroy();
+      }
+      if (cyContainerRef.current) {
+        if (overlayDiv && overlayDiv.parentNode === cyContainerRef.current) {
+          cyContainerRef.current.removeChild(overlayDiv);
+        }
+        if (haloDiv && haloDiv.parentNode === cyContainerRef.current) {
+          cyContainerRef.current.removeChild(haloDiv);
+        }
+      }
+    };
   }, [elements, onNodeClick, selectedNode]);
 
   return (
