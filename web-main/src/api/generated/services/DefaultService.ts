@@ -84,6 +84,10 @@ export interface SystemDomainsResponse {
     graphType: string;
 }
 
+export interface GraphDomainRequest {
+    domainIds: string[];
+}
+
 export class DefaultService {
     /**
      * Start a new chat with the LLM.
@@ -167,7 +171,7 @@ export class DefaultService {
     ): CancelablePromise<GraphResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/graph/clients/{clientId}/all',
+            url: '/api/graph/source_systems',
             path: {
                 'clientId': clientId,
             },
@@ -421,20 +425,20 @@ export class DefaultService {
      * @returns GraphDomainResponse List of domains
      * @throws ApiError
      */
-    public static postApiGraphDomainsBatch(
-        requestBody: GraphBatchRequest,
-    ): CancelablePromise<GraphDomainResponse> {
-        return __request(OpenAPI, {
-            method: 'POST',
-            url: '/api/graph/domains/batch',
-            body: requestBody,
-            mediaType: 'application/json',
-            errors: {
-                400: `Invalid input.`,
-                500: `Server error.`,
-            },
-        });
-    }
+    // public static postApiGraphDomainsBatch(
+    //     requestBody: GraphBatchRequest,
+    // ): CancelablePromise<GraphDomainResponse> {
+    //     return __request(OpenAPI, {
+    //         method: 'POST',
+    //         url: '/api/graph/domains/batch',
+    //         body: requestBody,
+    //         mediaType: 'application/json',
+    //         errors: {
+    //             400: `Invalid input.`,
+    //             500: `Server error.`,
+    //         },
+    //     });
+    // }
 
     /**
      * Get domains in batch for specified systems using the batch-domains endpoint
@@ -447,7 +451,7 @@ export class DefaultService {
     ): CancelablePromise<GraphDomainResponse> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/graph/domains/batch-domains',
+            url: '/api/graph/domains/batch',
             body: requestBody,
             mediaType: 'application/json',
             errors: {
@@ -509,12 +513,32 @@ export class DefaultService {
     ): CancelablePromise<SystemDomainsResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: '/api/graph/systems/{systemId}/domains',
+            url: 'http://localhost:8080/api/graph/domains/batch',
             path: {
                 'systemId': systemId,
             },
             errors: {
                 404: `System not found.`,
+                500: `Server error.`,
+            },
+        });
+    }
+    /**
+     * Get entities by domains
+     * @param requestBody
+     * @returns GraphEntityResponse List of entities for the specified domains
+     * @throws ApiError
+     */
+    public static postApiGraphEntitiesByDomains(
+        requestBody: GraphDomainRequest,
+    ): CancelablePromise<GraphEntityResponse> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/graph/entities/by-domains',
+            body: requestBody,
+            mediaType: 'application/json',
+            errors: {
+                400: `Invalid input.`,
                 500: `Server error.`,
             },
         });

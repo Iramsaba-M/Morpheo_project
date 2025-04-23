@@ -13,7 +13,7 @@ if (!Cytoscape.prototype.hasOwnProperty("fcose")) {
   Cytoscape.use(fcose);
 }
 
-export const System = ({ elements, onNodeClick, selectedNode }) => {
+export const System = ({ elements, onNodeClick, selectedNodes }) => {
   const cyRef = useRef(null);
   const cyContainerRef = useRef(null);
 
@@ -49,15 +49,15 @@ export const System = ({ elements, onNodeClick, selectedNode }) => {
 
     // Create center icon
     const centerIcon = document.createElement("div");
-    centerIcon.style.width = "100px";
-    centerIcon.style.height = "100px";
+    centerIcon.style.width = "90px";
+    centerIcon.style.height = "90px";
     centerIcon.style.backgroundColor = "#4569E1";
     centerIcon.style.borderRadius = "50%";
     centerIcon.style.display = "flex";
     centerIcon.style.alignItems = "center";
     centerIcon.style.justifyContent = "center";
-    centerIcon.style.border = "4px solid #D9D9FF";
-    centerIcon.innerHTML = `<img src="/images/graph/boxes.svg" alt="systems" style="width: 50px; height: 50px; filter: brightness(0) invert(1);">`;
+    centerIcon.style.border = "4px solid #BBF7D0";
+    centerIcon.innerHTML = `<img src="/images/graph/boxes.svg" alt="systems" style="width: 40px; height: 40px; filter: brightness(0) invert(1);">`;
     overlayDiv.appendChild(centerIcon);
 
     const cy = Cytoscape({
@@ -74,8 +74,8 @@ export const System = ({ elements, onNodeClick, selectedNode }) => {
             "background-position-y": "50%",
             "border-width": 4,
             "border-color": "#BBF7D0",
-            width: 80,
-            height: 80,
+            width: 60,
+            height: 60,
           },
         },
         {
@@ -88,7 +88,7 @@ export const System = ({ elements, onNodeClick, selectedNode }) => {
       ],
       layout: {
         name: "circle",
-        radius: 240,
+        radius: 180,
         startAngle: (3 * Math.PI) / 2,
         sweep: 2 * Math.PI - Math.PI / 3,
         center: { x: 0, y: -30 },
@@ -99,13 +99,21 @@ export const System = ({ elements, onNodeClick, selectedNode }) => {
       {
         query: "node",
         tpl: (data) => `
-          <div style="display: flex; flex-direction: column; align-items: center; margin-top: 120px;">
+          <div style="display: flex; flex-direction: column; align-items: center; margin-top: 110px;">
             <div style="display: flex; align-items: center; justify-content: center;
                 background-color: #16A34A;
                 border-radius: 15px;
                 padding: 2px 10px;
                 box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.2);
               ">
+              <div style="margin-right: 8px; display: flex; align-items: center;">
+                ${selectedNodes?.includes(data.id) ?
+                  `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M20 6L9 17L4 12" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>` :
+                  `<div style="width: 16px; height: 16px;"></div>`
+                }
+              </div>
               <img src="/images/systems/${data.icon}.svg" alt="${data.icon}" style="
                 width: 16px;
                 height: 16px;
@@ -127,7 +135,7 @@ export const System = ({ elements, onNodeClick, selectedNode }) => {
       },
     ]);
 
-    // Add click handler
+    // Add click handler for node
     cy.on('tap', 'node', (evt) => {
       const node = evt.target;
       if (onNodeClick) {
@@ -135,12 +143,14 @@ export const System = ({ elements, onNodeClick, selectedNode }) => {
       }
     });
 
-    // Select the node if provided
-    if (selectedNode) {
-      const node = cy.getElementById(selectedNode);
-      if (node) {
-        node.select();
-      }
+    // Select the nodes if provided
+    if (selectedNodes && selectedNodes.length > 0) {
+      selectedNodes.forEach(nodeId => {
+        const node = cy.getElementById(nodeId);
+        if (node) {
+          node.select();
+        }
+      });
     }
 
     cyRef.current = cy;
@@ -149,20 +159,19 @@ export const System = ({ elements, onNodeClick, selectedNode }) => {
       cy.resize();
       cy.fit();
 
-      // Position all nodes in a perfect circle
+      // Position all nodes in a perfect circle with equal distances
       const nodes = cy.nodes();
       const radius = 180; // Fixed radius for all nodes
       const centerX = cy.width() / 2;
       const centerY = cy.height() / 2;
       const angleStep = (2 * Math.PI) / nodes.length;
-      const startAngle = -Math.PI / 3; // Adjusted start angle to -60 degrees
+      const startAngle = -Math.PI / 2; // Start from top (12 o'clock position)
 
       nodes.forEach((node, index) => {
         const angle = startAngle + (index * angleStep);
-        node.position({
-          x: centerX + radius * Math.cos(angle),
-          y: centerY + radius * Math.sin(angle)
-        });
+        const x = centerX + radius * Math.cos(angle);
+        const y = centerY + radius * Math.sin(angle);
+        node.position({ x, y });
       });
 
       // Center the view and adjust zoom
@@ -186,7 +195,7 @@ export const System = ({ elements, onNodeClick, selectedNode }) => {
         }
       }
     };
-  }, [elements, onNodeClick, selectedNode]);
+  }, [elements, onNodeClick, selectedNodes]);
 
   return (
     <div className="relative w-full h-full" ref={cyContainerRef}>
